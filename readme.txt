@@ -1,1 +1,1 @@
-User Authentication Service
+Service Boilerplate
