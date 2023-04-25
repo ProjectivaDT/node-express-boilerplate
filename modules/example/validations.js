@@ -1,6 +1,6 @@
 const {BadRequestError, AuthorizationError} = require('../../helpers/errors')
 
-const validations = {
+const Validations = {
 	setStatus: function(req, res, next) {
 		if (!req.body.name || !req.body.status)
 			throw new BadRequestError("user","No service name or status")
@@ -9,4 +9,4 @@ const validations = {
 	}
 }
 
-module.exports = validations;
+module.exports = Validations;

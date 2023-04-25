@@ -5,7 +5,7 @@
 const { Sequelize } = require('sequelize');
 const config = require('../config');
 
-const initializeConnection =  async function() {
+const databaseLoader =  async function() {
   if (process.connection){
     return process.connection;
   }
@@ -29,4 +29,4 @@ const initializeConnection =  async function() {
   }
 }
 
-module.exports = initializeConnection;
+module.exports = databaseLoader;

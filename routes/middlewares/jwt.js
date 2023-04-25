@@ -1,15 +1,10 @@
-/**
- * Module dependencies.
- */
-'use strict';
-const jwt = require('jsonwebtoken');
-const config = require('../config')
+  const jwt = require('jsonwebtoken');
+  const config = require('../../config')
 
-
-/**
- * Module TokenService - Used to create JSON WebToken.
- */
-class TokenService {
+ /**
+  * Module TokenService - Used to create JSON WebToken.
+  */
+  class TokenService {
     constructor(headers) {
         this.token      = this._extractTokenFromHeaders(headers);
         this.payload    = null;
@@ -57,6 +52,45 @@ class TokenService {
 
         if(headers.length>0) return headers;
     }
-}
+  }
 
-module.exports = TokenService;
+
+(function () {
+
+  /**
+   * Middleware dependencies.
+   */
+  'use strict';
+
+  /**
+   * JWT Parser - it adds 2 attributes into the Request object
+   *
+   * req.isAuthenticated: if JWT token is valid
+   * req.tokenPayload: the JWT content
+   *
+   */
+
+  function middlewareWrapper(o){
+      // if no options were passed in, use the defaults
+      if (!o || o === true) {
+        o = {};
+      }
+
+      return function webtokenMiddleware(req, res, next){
+        const token = new TokenService(req.headers);
+        req.isAuthenticated = token.isAuthenticated();
+        req.tokenPayload    = token.getPayload();
+
+        if(req.tokenPayload){
+          TokenService.createToken(req.tokenPayload, (ntoken)=>{
+            res.set('authorization', 'Bearer ' + ntoken)
+            next();
+          })
+        } else {
+          next();
+        }
+      }
+  }
+
+  module.exports = middlewareWrapper;
+}());

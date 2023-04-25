@@ -1,79 +1,82 @@
-/**
- * Module Constants.
- */
-const HttpStatusCode = {
- OK: 200,
- BAD_REQUEST: 400,
- UNAUTHORIZED: 401,
- FORBIDDEN: 403,
- NOT_FOUND: 404,
- INTERNAL_SERVER: 500,
- SERVICE_UNAVAILABLE: 503
-}
-
-/**
- * Class BaseError
- */
-
 class BaseError extends Error {
- service;
- httpCode;
- isOperational;
- body;
- route;
+    constructor(error) {
+        super(error.message);
+        this.statusCode = error.statusCode;
+        this.errorMethod = error.method;
+        this.details = error.details;
+        this.timestamp = new Date().getTime();
+    }
 
- constructor(service, message, body, route, httpCode, isOperational) {
-   super(message);
-   Object.setPrototypeOf(this, new.target.prototype);
+    toString() {
+        return `${this.timestamp} - errorcode: ${this.statusCode} - message: ${this.message} - details: ${this.details}`;
+    }
 
-   this.body = body;
-   this.service = service;
-   this.httpCode = httpCode;
-   this.isOperational = isOperational;
-   this.route = route;
-
-   Error.captureStackTrace(this);
- }
+    toJSON() {
+        return {
+            timestamp: this.timestamp,
+            errorMethod: this.errorMethod,
+            errorCode: this.errorCode,
+            details: this.details,
+            message: this.message,
+        };
+    }
 }
 
-/**
- * Classes Error Types - Extends BaseError.
- */
 
-class AuthenticationError extends BaseError {
- constructor(service, message = 'Not authenticated user', body, route, httpCode = HttpStatusCode.UNAUTHORIZED, isOperational = true) {
-   super(service,message, body, route, httpCode, isOperational);
- }
+class SecurityError extends BaseError {
+    constructor(error) {
+        super(error);
+        this.errorType = "Security Error";
+        this.errorCode = error.errorCode || 403;
+    }
 }
 
-class AuthorizationError extends BaseError {
- constructor(service, message = 'Not authorized user', body, route, httpCode = HttpStatusCode.FORBIDDEN, isOperational = true) {
-   super(service,message, body, route, httpCode, isOperational);
- }
+class DataAccessError extends BaseError {
+    constructor(error) {
+        super(error);
+        this.errorType = "Data Access Error";
+        this.errorCode = error.errorCode || 403;
+    }
 }
 
 class BadRequestError extends BaseError {
- constructor(service, message = 'Missing or wrong parameters', body, route, httpCode = HttpStatusCode.BAD_REQUEST, isOperational = true) {
-   super(service,message, body, route, httpCode, isOperational);
- }
+    constructor(error) {
+        super(error);
+        this.errorType = "Bad Request Error";
+        this.errorCode = error.errorCode || 400;
+    }
 }
 
-class MissingHeaderError extends BaseError {
- constructor(service, message = 'Missing Header', body, route, httpCode = HttpStatusCode.BAD_REQUEST, isOperational = true) {
-   super(service,message, body, route, httpCode, isOperational);
- }
+class RequestError extends BaseError {
+    constructor(error) {
+        super(error);
+        this.errorType = "Request Error";
+        this.errorCode = error.errorCode || 500;
+    }
 }
 
-class AppVersionError extends BaseError {
- constructor(service, message = 'Missing Header', body, route, httpCode = HttpStatusCode.BAD_REQUEST, isOperational = true) {
-   super(service,message, body, route, httpCode, isOperational);
- }
+class AuthenticationError extends BaseError {
+    constructor(error) {
+        super(error);
+        this.errorType = "Authentication Error";
+        this.errorCode = error.errorCode || 403;
+    }
 }
 
-class MaintenanceError extends BaseError {
- constructor(service, message = 'System under maintenance', body, route, httpCode = HttpStatusCode.SERVICE_UNAVAILABLE, isOperational = true) {
-   super(service,message, body, route, httpCode, isOperational);
- }
+class AuthorizationError extends BaseError {
+    constructor(error) {
+        super(error);
+        this.errorType = "Authorization Error";
+        this.errorCode = error.errorCode || 403;
+    }
 }
 
-module.exports = {BaseError, AuthenticationError, AuthorizationError, BadRequestError,MissingHeaderError,AppVersionError,MaintenanceError};
+module.exports = {
+    BaseError,
+    SecurityError,
+    RequestError,
+    BadRequestError,
+    DataAccessError,
+    AuthenticationError,
+    AuthorizationError
+};

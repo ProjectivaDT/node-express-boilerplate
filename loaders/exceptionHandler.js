@@ -3,7 +3,7 @@
  */
 
 const {BaseError} = require('../helpers/errors')
-const logger = require('../helpers/logger');
+const Logger = require('../helpers/logger');
 
 
 /**
@@ -12,13 +12,13 @@ const logger = require('../helpers/logger');
 
 class ErrorHandler {
     async handleError(err, res){
-        logger.warn("Controlled Error -- ",err);
+        Logger.warn("Controlled Error -- ",err);
         res.status(err.httpCode);
         res.send({error: err.message});
     }
 
     async handleUnknownError(err, res){
-        logger.error("Unknown Error -- ",err);
+        Logger.error("Unknown Error -- ",err);
         if(err.statusCode)
             res.status(err.statusCode)
         else
@@ -38,7 +38,7 @@ class ErrorHandler {
 const catchError = function(app){
     var errorHandler = new ErrorHandler();
 
-    app.use(async (err, req, res, next) => {
+    app.use(async (err, req, res) => {
         if (errorHandler.isTrustedError(err)) {
             errorHandler.handleError(err, res);
         } else {
@@ -46,12 +46,12 @@ const catchError = function(app){
         }
     });
 
-    process.on('unhandledRejection', (reason, promise) => {
-        logger.error('Unhandled Rejection at: %s', reason)
+    process.on('unhandledRejection', (reason) => {
+        Logger.error(`Unhandled Rejection at: ${reason}`)
     });
 
     process.on('uncaughtException', (error, source) => {
-        logger.error('Uncaught Exception', {error, source});
+        Logger.error('Uncaught Exception', {error, source});
     });
 }
 

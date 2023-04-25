@@ -1,6 +1,5 @@
 'use strict';
-require('dotenv').config({ path:`.env.${process.env.NODE_ENV}`});
-const fs = require('fs');
+require('dotenv').config();
 
 module.exports = {
 	port: process.env.PORT,
@@ -15,4 +14,5 @@ module.exports = {
 		timeout: process.env.DB_POOL_ACQUIRE
 	},
 	tokenSecret: process.env.TOKEN_SECRET,
+	environment: process.env.ENVIRONMENT
 }

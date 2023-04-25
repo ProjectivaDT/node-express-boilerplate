@@ -1,10 +1,11 @@
 exports.build = function(app){
-	const serviceCtrl = require('../controllers/serviceCtrl');
-	const {isLoggedIn, permit} = require('./security/permissions.js');
-	const validations = require('./validations/sample');
+	const exampleCtrl = require('../modules/example/controller');
+	const {isLoggedIn, permit} = require('./guards/permissions.js');
+	const jwt = require('./middlewares/jwt');
+
+	app.use(jwt());
 
 	app
-	.get('/api/v1/service/status', serviceCtrl.getStatus)
-	.post('/api/v1/service/private', [isLoggedIn, permit, validations.setStatus], serviceCtrl.setStatus)
-	.post('/api/v1/service/public', [validations.setStatus], serviceCtrl.setStatus)
+		.get('/api/v1/example', exampleCtrl.getall)
+		.post('/api/v1/example', [isLoggedIn, permit], exampleCtrl.create)
 }

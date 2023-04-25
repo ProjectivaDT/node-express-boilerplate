@@ -1,10 +1,11 @@
 const config = require('./config');
-const loaders = require('./loaders');
-const express = require('express');
-const app = express();
+const databaseLoader = require('./loaders/databaseLoader');
 
 async function startServer(){
- await loaders({expressApp: app});
+
+  await databaseLoader();
+  const app = require("./app");
+
   app.listen(config.port, err => {
     if (err){
       console.log(err);
@@ -14,5 +15,3 @@ async function startServer(){
   })
 }
 startServer();
-
-module.exports = app

@@ -1,6 +1,5 @@
 
 const {AuthenticationError, AuthorizationError} = require('../../helpers/errors')
-const config = require('../../config')
 
 function isAllowed(service, action, user) {
 

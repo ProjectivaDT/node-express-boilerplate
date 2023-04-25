@@ -1,137 +1,92 @@
-/**
- * Module dependencies.
- */
-var winston   =    require("winston");
-
-/**
- * Module constants.
- */
-
-const customLevels = {
- levels: {
-   silly: 6,
-   debug: 5,
-   http: 4,
-   info: 3,
-   warn: 2,
-   error: 1,
-   fatal: 0,
- },
- colors: {
-   silly: 'white',
-   debug: 'green',
-   http: 'blue',
-   info: 'blue',
-   warn: 'yellow',
-   error: 'red',
-   fatal: 'red'
- },
-};
-
-
-/**
- * Winston Formats.
- */
-
-const consoleformat = winston.format.combine(
- winston.format.colorize(),
- winston.format.timestamp(),
- // winston.format.splat(),
-  winston.format.printf((info) => {
-   const { timestamp, level, message, ...meta } = info;
-   var ret = `${timestamp} [${level}]: ${message} \n`
-   // ret += meta.type ? String(meta.type) : '';
-   // ret += meta.body ? String(meta.body) : ''
-   // ret += meta.stack ? String(meta.stack) : '';
-   ret += JSON.stringify(meta)
-   ret += '\n';
-   return  ret;
- })
-);
-
-/**
- * Check environment.
- */
-
-function isDevEnvironment(){
-  if (process.env.NODE_ENV == 'development')
-    return true;
-  else
-    return false;
-}
-
-/**
- * Logger Class.
- */
+const config  = require('../config');
+const winston = require('winston');
 
 class Logger {
+    logger;
 
- #logger;
+    constructor() {
+        if (Logger._instance) {
+            return Logger._instance;
+        }
 
-  constructor() {
-   const _production = new winston.transports.File({
-     filename: 'logs/error.log',
-     level: 'error',
-   });
+        this.initialize();
+        Logger._instance = this;
+    }
 
-   const _console = new winston.transports.Console({
-     format: consoleformat,
-   });
+    initialize() {
 
-   const _development = new winston.transports.File({
-     filename: 'logs/debug.log',
-     level: 'silly',
-   });
+        let format, level;
 
-   this.#logger = winston.createLogger({
-     level: isDevEnvironment() ? 'silly' : 'error',
-     levels: customLevels.levels,
-     transports: [_production],
-   });
+        if(config.environment == 'development'){
+            format = winston.format.combine(
+                winston.format.colorize(),
+                winston.format.timestamp(),
+                winston.format.printf(info =>{
+                    // delete info.extra.muevy_transaction_id;
 
-   if(isDevEnvironment()){
-    this.#logger
-      .clear()
-      .add(_console)
-      .add(_development)
-   }
+                    return `${info.timestamp} ${info.level}: ${info.message} ${info.extra ? JSON.stringify(info.extra) : ''}`;
+                    }
+                ));
 
-   winston.addColors(customLevels.colors);
- }
+            level = 'debug';
 
- /**
- * Logger types methods
- */
+        } else {
+            format = winston.format.json();
+            level = 'warn';
+        }
 
- silly(msg, meta) {
-   this.#logger.log('silly', msg, meta);
- }
+        this.logger = winston.createLogger({
+          level: level,
+          format: format,
+        });
 
- debug(msg, meta) {
-   this.#logger.debug({message: msg, context: meta});
- }
+        this.logger.add(new winston.transports.Console({
+          stderrLevels: ['error'],
+          consoleWarnLevels: ['warn']
+        }));
 
- http(msg, meta) {
-   this.#logger.log({level: 'http', message: msg, meta: meta});
- }
+    }
 
- info(msg, meta) {
-   this.#logger.info(msg, meta);
- }
+    debug(msg, obj) {
+        this.logger.log({
+            level: 'debug',
+            message: msg,
+            extra: obj
+        });
+    }
 
- warn(msg, meta) {
-   this.#logger.warn(msg, meta);
- }
+    trace(msg, obj) {
+        this.logger.log({
+            level: 'debug',
+            message: msg,
+            extra: obj
+        });
+    }
 
- error(msg, meta) {
-   this.#logger.error(msg, meta);
- }
+    info(msg, obj) {
+        this.logger.log({
+            level: 'info',
+            message: msg,
+            extra: obj
+        });
+    }
 
- fatal(msg, meta) {
-   this.#logger.log('fatal', msg, meta);
- }
+    warn(msg, obj) {
+        this.logger.log({
+            level: 'warn',
+            message: msg,
+            extra: obj
+        });
+    }
+
+    error(msg, obj){
+        this.logger.log({
+            level: 'error',
+            message: msg,
+            extra: obj
+        });
+    }
+
 }
 
-const logger = new Logger();
-
-module.exports = logger;
+module.exports = new Logger();

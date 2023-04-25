@@ -5,15 +5,15 @@
 
 'use strict';
 const {DataTypes, Model} = require('sequelize');
-const sequelize = require('../helpers/db');
+const db = require('../../helpers/db');
 
 /**
  * Model definitions.
  */
 
-class Service extends Model {}
+class Example extends Model {}
 
-Service.init({
+Example.init({
   id:{
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -25,14 +25,14 @@ Service.init({
     unique: true
   },
   status:{
-  	type: DataTypes.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   }
 },{
-  sequelize,
-  modelName:'service',
-  tableName: 'Services',
+  sequelize: db,
+  modelName:'example',
+  tableName: 'Example',
   timestamps: false
 })
 
-module.exports = Service;
+module.exports = Example;
